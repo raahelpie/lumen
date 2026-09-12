@@ -7,7 +7,7 @@ import {
   useAgentContext,
   useFrontendTool,
 } from "@copilotkit/react-core/v2";
-import { BookOpenText, Mic, MicOff, Sparkles } from "lucide-react";
+import { BookOpenText, MessageSquarePlus, Mic, MicOff, Sparkles } from "lucide-react";
 import { z } from "zod";
 import type { ReaderContext } from "@/lib/reader-types";
 import { VisualCard } from "./visual-card";
@@ -47,6 +47,7 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
   const [open, setOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const [speechError, setSpeechError] = useState("");
+  const [chatSession, setChatSession] = useState(0);
 
   useAgentContext({
     description: "The reader's current book, reading position, visible passage, nearby context, and selected text. Never spoil beyond this supplied position.",
@@ -95,6 +96,13 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
     },
     [],
   );
+
+  const startFreshChat = () => {
+    setDraft("");
+    setSpeechError("");
+    setChatSession((session) => session + 1);
+    setOpen(true);
+  };
 
   const startListening = () => {
     const host = window as typeof window & {
@@ -160,8 +168,50 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
         [data-slot="copilot-modal-header"] {
           background: rgba(245, 237, 221, 0.96) !important;
           border-bottom: 1px solid #cdbb99 !important;
-          padding: 15px 18px !important;
+          padding: 12px 14px !important;
           backdrop-filter: none !important;
+        }
+
+        .marginalia-header {
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .marginalia-header__left {
+          justify-self: start;
+        }
+
+        .marginalia-header__title {
+          justify-self: center;
+          min-width: 0;
+        }
+
+        .marginalia-header__right {
+          justify-self: end;
+        }
+
+        .marginalia-new-chat {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          min-height: 32px;
+          padding: 5px 9px;
+          border: 1px solid rgba(185, 147, 84, 0.42) !important;
+          border-radius: 3px;
+          background: rgba(255, 248, 233, 0.42) !important;
+          color: var(--ink-soft) !important;
+          cursor: pointer;
+          font-family: var(--font-mono), monospace !important;
+          font-size: 0.65rem;
+          letter-spacing: 0.035em;
+        }
+
+        .marginalia-new-chat:hover {
+          color: var(--wine-dark) !important;
+          border-color: var(--brass) !important;
+          background: rgba(185, 147, 84, 0.1) !important;
         }
 
         [data-testid="copilot-header-title"] {
@@ -283,6 +333,18 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
           font-family: inherit;
           transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease;
         }
+
+        @media (max-width: 520px) {
+          .marginalia-new-chat span {
+            display: none;
+          }
+
+          .marginalia-new-chat {
+            width: 32px;
+            padding: 0;
+            justify-content: center;
+          }
+        }
       `}</style>
 
       <button
@@ -298,6 +360,7 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
       {speechError && <div className="speech-note">{speechError}</div>}
 
       <CopilotPopup
+        key={chatSession}
         agentId="reader"
         open={open}
         onOpenChange={setOpen}
@@ -306,7 +369,27 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
         clickOutsideToClose
         toggleButton={ReaderBubble}
         input={{ showDisclaimer: false }}
-        header={{ title: "Marginalia" }}
+        header={{
+          title: "Marginalia",
+          children: ({ titleContent, closeButton }) => (
+            <header data-slot="copilot-modal-header" className="marginalia-header">
+              <div className="marginalia-header__left">
+                <button
+                  type="button"
+                  className="marginalia-new-chat"
+                  onClick={startFreshChat}
+                  aria-label="Start a fresh chat"
+                  title="Start a fresh chat"
+                >
+                  <MessageSquarePlus size={15} aria-hidden="true" />
+                  <span>New chat</span>
+                </button>
+              </div>
+              <div className="marginalia-header__title">{titleContent}</div>
+              <div className="marginalia-header__right">{closeButton}</div>
+            </header>
+          ),
+        }}
         labels={{
           modalHeaderTitle: "Marginalia",
           welcomeMessageText: context.visibleText
