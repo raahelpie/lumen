@@ -50,7 +50,7 @@ AI_PROVIDER=openrouter
 IMAGE_PROVIDER=openrouter
 OPENROUTER_API_KEY=...
 OPENROUTER_MODEL=openai/gpt-5.6-luna
-OPENROUTER_IMAGE_MODEL=openai/gpt-image-1
+OPENROUTER_IMAGE_MODEL=openai/gpt-image-2.5-flare
 ```
 
 You can mix providers. For example, set `AI_PROVIDER=openrouter` and `IMAGE_PROVIDER=openai`. Restart the development server after changing environment variables.
@@ -70,6 +70,7 @@ npm run dev
 npm run build
 npm run lint
 npm run check:provider
+npm run check:openrouter # validates the saved OpenRouter key without printing it
 npm run check:epub # with the app running on port 3000
 npm start
 ```

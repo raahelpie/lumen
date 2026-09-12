@@ -25,6 +25,15 @@ function makeAgent() {
       throw new Error("AI_PROVIDER is openrouter but OPENROUTER_API_KEY is missing.");
     }
 
+    // A complete OpenRouter v1 key has 64 hexadecimal characters after the
+    // prefix. Catch the common one-character truncation before it turns into
+    // OpenRouter's opaque `401 User not found` response.
+    if (/^sk-or-v1-[a-f\d]{63}$/i.test(process.env.OPENROUTER_API_KEY)) {
+      console.error(
+        "OPENROUTER_API_KEY appears truncated. Copy the complete key from OpenRouter; it should contain 64 characters after sk-or-v1-.",
+      );
+    }
+
     // Use CopilotKit's bundled OpenAI-compatible provider so its AI SDK model
     // contract stays in lockstep with the runtime. OpenRouter accepts this API.
     process.env.OPENAI_BASE_URL = "https://openrouter.ai/api/v1";

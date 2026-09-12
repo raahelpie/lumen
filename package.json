@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "check:provider": "node scripts/check-provider.mjs",
+    "check:openrouter": "node scripts/check-openrouter-key.mjs",
     "check:epub": "node scripts/repro-epub.mjs"
   },
   "dependencies": {

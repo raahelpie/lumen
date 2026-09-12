@@ -39,9 +39,9 @@ Style: atmospheric editorial illustration, historically plausible materials and 
           "X-OpenRouter-Title": "Marginalia Reader",
         },
         body: JSON.stringify({
-          model: process.env.OPENROUTER_IMAGE_MODEL || "openai/gpt-image-1",
+          model: process.env.OPENROUTER_IMAGE_MODEL || "openai/gpt-image-2.5-flare",
           prompt,
-          size: "1024x1024",
+          aspect_ratio: "1:1",
           quality: "low",
         }),
       });
