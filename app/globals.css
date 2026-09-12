@@ -323,3 +323,63 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .reader-bubble__mark svg:last-child { width: 10px; height: 10px; top: -5px; right: -6px; }
   .speech-note { right: 12px; bottom: calc(70px + env(safe-area-inset-bottom)); width: min(280px, calc(100vw - 24px)); }
 }
+
+@media (max-width: 767px) {
+  /* Keep the reading companion secondary to the book on phone-sized screens. */
+  div[data-copilotkit]:has(> [data-copilot-popup]) {
+    inset: auto max(10px, env(safe-area-inset-right)) calc(66px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
+    width: auto !important;
+    height: 92px !important;
+    max-height: 92px !important;
+    padding: 0 !important;
+  }
+
+  div[data-copilotkit]:has(> [data-copilot-popup] [data-testid="copilot-message-list"] > *) {
+    height: min(46dvh, 420px) !important;
+    max-height: 46dvh !important;
+  }
+
+  .copilotKitPopup,
+  [data-copilot-popup] {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  [data-copilot-popup] [data-slot="copilot-modal-header"],
+  [data-popup-chat] div:has(> h1) {
+    display: none !important;
+  }
+
+  [data-copilot-popup] [data-testid="copilot-chat-input"] {
+    border-radius: 999px !important;
+  }
+
+  [data-copilot-popup] [data-testid="copilot-chat-input"] > [data-layout="expanded"] {
+    grid-template-columns: 40px minmax(0, 1fr) 46px !important;
+    grid-template-rows: 50px !important;
+    gap: 0 !important;
+    padding: 4px 8px !important;
+  }
+
+  [data-copilot-popup] [data-testid="copilot-chat-input"] > [data-layout="expanded"] > :nth-child(1) {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  [data-copilot-popup] [data-testid="copilot-chat-input"] > [data-layout="expanded"] > :nth-child(2) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    min-height: 50px !important;
+  }
+
+  [data-copilot-popup] [data-testid="copilot-chat-input"] > [data-layout="expanded"] > :nth-child(3) {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+
+  [data-copilot-popup] [data-testid="copilot-chat-textarea"] {
+    padding-inline: 8px !important;
+  }
+}

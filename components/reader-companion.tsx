@@ -149,6 +149,7 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
         height="min(680px, calc(100vh - 120px))"
         clickOutsideToClose
         toggleButton={ReaderBubble}
+        input={{ showDisclaimer: false }}
         header={{ title: "Marginalia" }}
         labels={{
           modalHeaderTitle: "Marginalia",
