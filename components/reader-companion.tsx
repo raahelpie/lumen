@@ -129,6 +129,47 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
 
   return (
     <div className="companion-dock" aria-label="Reading companion controls">
+      <style jsx global>{`
+        .copilotKitPopupContent,
+        [data-copilotkit-popup-content],
+        [data-copilot-popup] {
+          font-family: var(--font-book), Georgia, serif !important;
+          color: var(--ink) !important;
+        }
+
+        .copilotKitPopup textarea,
+        .copilotKitPopup input,
+        [data-copilotkit-popup] textarea,
+        [data-copilotkit-popup] input,
+        [data-copilot-popup] textarea,
+        [data-copilot-popup] input,
+        [data-copilotkit-popup] [contenteditable="true"],
+        [data-copilot-popup] [contenteditable="true"] {
+          font-family: var(--font-book), Georgia, serif !important;
+          font-size: 17px !important;
+          line-height: 1.5 !important;
+          color: var(--ink) !important;
+          letter-spacing: 0 !important;
+        }
+
+        .copilotKitPopup textarea::placeholder,
+        .copilotKitPopup input::placeholder,
+        [data-copilotkit-popup] textarea::placeholder,
+        [data-copilotkit-popup] input::placeholder,
+        [data-copilot-popup] textarea::placeholder,
+        [data-copilot-popup] input::placeholder {
+          font-size: 15px !important;
+          color: #8a8175 !important;
+          opacity: 1 !important;
+        }
+
+        .copilotKitPopup button,
+        [data-copilotkit-popup] button,
+        [data-copilot-popup] button {
+          transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+        }
+      `}</style>
+
       <button
         className={`voice-orb ${listening ? "voice-orb--listening" : ""}`}
         onClick={startListening}
