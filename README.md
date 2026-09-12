@@ -70,8 +70,11 @@ npm run dev
 npm run build
 npm run lint
 npm run check:provider
+npm run check:epub # with the app running on port 3000
 npm start
 ```
+
+The EPUB check opens the included public-domain fixture in a local Chrome or Brave browser and verifies that text remains visible while turning pages. Set `READER_URL` or `CHROME_PATH` when using a different port or browser location.
 
 ## Known limits
 

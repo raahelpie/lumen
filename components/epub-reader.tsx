@@ -24,7 +24,7 @@ type EpubBook = {
   ready: Promise<unknown>;
   loaded: { metadata: Promise<Record<string, string>>; navigation: Promise<{ toc?: Array<{ href: string; label: string }> }> };
   renderTo: (element: HTMLElement, options: Record<string, unknown>) => EpubRendition;
-  locations: { generate: (chars?: number) => Promise<unknown>; percentageFromCfi: (cfi: string) => number };
+  spine: { items: unknown[] };
   destroy: () => void;
 };
 
@@ -42,6 +42,7 @@ type EpubLocation = {
   start?: {
     cfi?: string;
     href?: string;
+    index?: number;
     displayed?: { page: number; total: number };
   };
 };
@@ -96,8 +97,6 @@ export function EpubReader() {
       await book.ready;
       const metadata = await book.loaded.metadata;
       const navigation = await book.loaded.navigation;
-      await book.locations.generate(1200);
-
       if (!mountRef.current) return;
       const rendition = book.renderTo(mountRef.current, {
         width: "100%",
@@ -113,7 +112,7 @@ export function EpubReader() {
           background: "#f5eddd !important",
           "font-family": "Georgia, 'Times New Roman', serif !important",
           "line-height": "1.72 !important",
-          padding: "3% 7% !important",
+          padding: "28px 30px !important",
         },
         p: { "font-size": "1.08rem !important" },
         a: { color: "#7c3228 !important" },
@@ -122,10 +121,12 @@ export function EpubReader() {
       const toc = navigation.toc || [];
       rendition.on("relocated", (location: EpubLocation) => {
         const cfi = location?.start?.cfi || "";
-        const progress = cfi ? Math.round(book.locations.percentageFromCfi(cfi) * 100) : 0;
         const href = location?.start?.href || "";
         const chapter = toc.find((item) => href.includes(item.href.split("#")[0]))?.label || "Current chapter";
         const displayed = location?.start?.displayed;
+        const sectionIndex = location?.start?.index || 0;
+        const sectionProgress = displayed ? displayed.page / Math.max(displayed.total, 1) : 0;
+        const progress = Math.min(100, Math.round(((sectionIndex + sectionProgress) / Math.max(book.spine.items.length, 1)) * 100));
         setContext((current) => ({
           ...current,
           chapter: cleanText(chapter),
