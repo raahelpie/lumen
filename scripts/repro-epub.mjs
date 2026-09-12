@@ -29,7 +29,9 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
 
   await page.goto(appUrl);
-  await page.locator('input[type="file"]').setInputFiles(epubPath);
+  if (process.env.USE_DEFAULT_BOOK !== "1") {
+    await page.locator('input[type="file"]').setInputFiles(epubPath);
+  }
   await page.waitForFunction(() => {
     const label = document.querySelector(".upload-button")?.textContent || "";
     return label.includes("Change book") || Boolean(document.querySelector(".reader-error"));
@@ -94,6 +96,10 @@ try {
     }
     await page.getByRole("button", { name: "Next page" }).click();
     await page.waitForTimeout(150);
+  }
+
+  if (!sawReadablePage) {
+    throw new Error("The reader did not display readable text.");
   }
 
   process.stdout.write(`${JSON.stringify({ readings, errors }, null, 2)}\n`);

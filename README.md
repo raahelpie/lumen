@@ -14,7 +14,7 @@ The repository is a hackathon-ready functional prototype built with Next.js, EPU
 - Generate passage-grounded illustrations
 - Find real historical reference images through Wikimedia Commons
 - Switch text and image providers independently between OpenAI and OpenRouter
-- Use the included *A Study in Scarlet* passage before uploading a book
+- Start with the included public-domain edition of *A Study in Scarlet*, opened at “The Lauriston Gardens Mystery” for the demo
 - Keep agent answers inside the supplied reading context to reduce spoilers
 
 ## Run locally

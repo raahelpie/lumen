@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BookMarked, ChevronLeft, ChevronRight, Library, Upload } from "lucide-react";
 import type { ReaderContext } from "@/lib/reader-types";
 import { ReaderCompanion } from "./reader-companion";
 
 const SAMPLE_TEXT = `It was a large square room, looking all the larger from the absence of all furniture. A vulgar flaring paper adorned the walls, but it was blotched in places with mildew, and here and there great strips had become detached and hung down, exposing the yellow plaster beneath. Opposite the door was a showy fireplace, surmounted by a mantelpiece of imitation white marble. On one corner of this was stuck the stump of a red wax candle. The solitary window was so dirty that the light was hazy and uncertain, giving a dull grey tinge to everything, which was intensified by the thick layer of dust which coated the whole apartment.`;
+const DEFAULT_BOOK_PATH = "/books/a-study-in-scarlet.epub";
+const DEFAULT_DEMO_LOCATION = "text/chapter-1-3.xhtml";
 
 const EMPTY_CONTEXT: ReaderContext = {
   title: "A Study in Scarlet",
@@ -29,7 +31,7 @@ type EpubBook = {
 };
 
 type EpubRendition = {
-  display: () => Promise<unknown>;
+  display: (target?: string) => Promise<unknown>;
   next: () => Promise<unknown>;
   prev: () => Promise<unknown>;
   on: (event: string, handler: (...values: never[]) => void) => void;
@@ -68,7 +70,7 @@ export function EpubReader() {
     };
   }, []);
 
-  const captureVisibleText = () => {
+  const captureVisibleText = useCallback(() => {
     const contents = renditionRef.current?.getContents() || [];
     const text = cleanText(contents.map((item) => item.document.body?.innerText || "").join(" "));
     const selection = cleanText(contents.map((item) => item.document.getSelection?.()?.toString() || "").join(" "));
@@ -80,9 +82,9 @@ export function EpubReader() {
         selectedText: selection,
       }));
     }
-  };
+  }, []);
 
-  const loadBook = async (file: File) => {
+  const loadBook = useCallback(async (file: File, initialLocation?: string) => {
     setLoading(true);
     setError("");
     try {
@@ -154,7 +156,7 @@ export function EpubReader() {
         surroundingText: "",
       });
       setHasBook(true);
-      await rendition.display();
+      await rendition.display(initialLocation);
       window.setTimeout(captureVisibleText, 160);
     } catch (cause) {
       setHasBook(false);
@@ -162,7 +164,31 @@ export function EpubReader() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [captureVisibleText]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadDefaultBook = window.setTimeout(() => {
+      void fetch(DEFAULT_BOOK_PATH, { signal: controller.signal })
+        .then((response) => {
+          if (!response.ok) throw new Error("The included demo book could not be loaded.");
+          return response.blob();
+        })
+        .then((blob) => loadBook(
+          new File([blob], "AStudyInScarlet.epub", { type: "application/epub+zip" }),
+          DEFAULT_DEMO_LOCATION,
+        ))
+        .catch((cause) => {
+          if (cause instanceof DOMException && cause.name === "AbortError") return;
+          setError(cause instanceof Error ? cause.message : "The included demo book could not be loaded.");
+        });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(loadDefaultBook);
+      controller.abort();
+    };
+  }, [loadBook]);
 
   return (
     <main className="reader-shell">
