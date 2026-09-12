@@ -142,9 +142,19 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
         }
 
         [data-popup-chat],
-        [data-testid="copilot-chat"] {
-          background: transparent !important;
+        [data-testid="copilot-chat"],
+        [data-testid="copilot-scroll-content"],
+        [data-testid="copilot-input-overlay"] {
+          background:
+            linear-gradient(90deg, rgba(118, 89, 51, 0.035), transparent 10%, transparent 90%, rgba(118, 89, 51, 0.04)),
+            var(--paper) !important;
           color: var(--ink) !important;
+        }
+
+        [data-popup-chat] > div,
+        [data-testid="copilot-chat"] > div:not([data-testid="copilot-input-overlay"]),
+        [data-testid="copilot-scroll-content"] > div {
+          background: transparent !important;
         }
 
         [data-slot="copilot-modal-header"] {
@@ -251,6 +261,7 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
           font-size: 18px !important;
           line-height: 1.62 !important;
           color: var(--ink) !important;
+          background: transparent !important;
         }
 
         [data-testid="copilot-user-message"] > [class*="prose"] {
