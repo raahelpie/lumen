@@ -49,7 +49,7 @@ Use the hackathon OpenRouter credit for both:
 AI_PROVIDER=openrouter
 IMAGE_PROVIDER=openrouter
 OPENROUTER_API_KEY=...
-OPENROUTER_MODEL=openai/gpt-4.1-mini
+OPENROUTER_MODEL=openai/gpt-5.6-luna
 OPENROUTER_IMAGE_MODEL=openai/gpt-image-1
 ```
 
@@ -69,6 +69,7 @@ The current prototype sends the rendered section text available around the curre
 npm run dev
 npm run build
 npm run lint
+npm run check:provider
 npm start
 ```
 

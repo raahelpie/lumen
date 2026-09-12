@@ -6,14 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:provider": "node scripts/check-provider.mjs"
   },
   "dependencies": {
     "@copilotkit/react-core": "latest",
     "@copilotkit/runtime": "latest",
-    "@openrouter/ai-sdk-provider": "latest",
-    "@ai-sdk/openai": "latest",
-    "ai": "latest",
     "epubjs": "latest",
     "lucide-react": "latest",
     "next": "latest",

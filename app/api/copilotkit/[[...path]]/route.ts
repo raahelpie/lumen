@@ -1,4 +1,3 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   BuiltInAgent,
   CopilotRuntime,
@@ -26,11 +25,15 @@ function makeAgent() {
       throw new Error("AI_PROVIDER is openrouter but OPENROUTER_API_KEY is missing.");
     }
 
-    const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+    // Use CopilotKit's bundled OpenAI-compatible provider so its AI SDK model
+    // contract stays in lockstep with the runtime. OpenRouter accepts this API.
+    process.env.OPENAI_BASE_URL = "https://openrouter.ai/api/v1";
+    const modelName = process.env.OPENROUTER_MODEL || "openai/gpt-5.6-luna";
     return new BuiltInAgent({
-      // CopilotKit currently bundles AI SDK v6 while the latest OpenRouter provider
-      // exposes the v7 model shape. The runtime-compatible surface is structural.
-      model: openrouter(process.env.OPENROUTER_MODEL || "openai/gpt-4.1-mini") as never,
+      // The first prefix selects CopilotKit's compatible OpenAI provider. The
+      // remaining OpenRouter slug is sent unchanged to OpenRouter.
+      model: "openai/" + modelName,
+      apiKey: process.env.OPENROUTER_API_KEY,
       prompt: READER_PROMPT,
       maxSteps: 3,
       maxOutputTokens: 900,
