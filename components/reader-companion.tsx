@@ -130,43 +130,147 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
   return (
     <div className="companion-dock" aria-label="Reading companion controls">
       <style jsx global>{`
-        .copilotKitPopupContent,
-        [data-copilotkit-popup-content],
         [data-copilot-popup] {
           font-family: var(--font-book), Georgia, serif !important;
           color: var(--ink) !important;
+          background:
+            linear-gradient(90deg, rgba(118, 89, 51, 0.045), transparent 9%, transparent 91%, rgba(118, 89, 51, 0.05)),
+            var(--paper) !important;
+          border: 1px solid #b99c6e !important;
+          border-radius: 6px !important;
+          box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42), inset 0 0 38px rgba(127, 92, 45, 0.04) !important;
         }
 
-        .copilotKitPopup textarea,
-        .copilotKitPopup input,
-        [data-copilotkit-popup] textarea,
-        [data-copilotkit-popup] input,
+        [data-popup-chat],
+        [data-testid="copilot-chat"] {
+          background: transparent !important;
+          color: var(--ink) !important;
+        }
+
+        [data-slot="copilot-modal-header"] {
+          background: rgba(245, 237, 221, 0.96) !important;
+          border-bottom: 1px solid #cdbb99 !important;
+          padding: 15px 18px !important;
+          backdrop-filter: none !important;
+        }
+
+        [data-testid="copilot-header-title"] {
+          font-family: var(--font-book), Georgia, serif !important;
+          font-size: 20px !important;
+          font-weight: 500 !important;
+          line-height: 1 !important;
+          letter-spacing: 0.015em !important;
+          color: var(--ink) !important;
+        }
+
+        [data-testid="copilot-close-button"] {
+          color: var(--brass) !important;
+          border: 1px solid transparent !important;
+        }
+
+        [data-testid="copilot-close-button"]:hover {
+          color: var(--wine-dark) !important;
+          background: rgba(126, 48, 40, 0.07) !important;
+          border-color: rgba(126, 48, 40, 0.14) !important;
+        }
+
+        [data-testid="copilot-chat"] h1 {
+          max-width: 350px !important;
+          margin-inline: auto !important;
+          font-family: var(--font-book), Georgia, serif !important;
+          font-size: 26px !important;
+          line-height: 1.35 !important;
+          font-weight: 400 !important;
+          letter-spacing: 0 !important;
+          color: var(--ink) !important;
+        }
+
+        [data-testid="copilot-chat"] h1::before {
+          content: "◆";
+          display: block;
+          margin-bottom: 16px;
+          color: var(--brass);
+          font-size: 11px;
+          line-height: 1;
+        }
+
+        [data-testid="copilot-chat-input"] {
+          background: #fbf4e6 !important;
+          border: 1px solid #c8b38e !important;
+          border-radius: 5px !important;
+          box-shadow: 0 7px 20px rgba(61, 45, 26, 0.12), inset 0 1px rgba(255, 255, 255, 0.72) !important;
+        }
+
+        [data-testid="copilot-chat-input"]:focus-within {
+          border-color: var(--brass) !important;
+          box-shadow: 0 0 0 2px rgba(185, 147, 84, 0.16), 0 8px 24px rgba(61, 45, 26, 0.14) !important;
+        }
+
+        [data-testid="copilot-chat-textarea"],
         [data-copilot-popup] textarea,
         [data-copilot-popup] input,
-        [data-copilotkit-popup] [contenteditable="true"],
         [data-copilot-popup] [contenteditable="true"] {
           font-family: var(--font-book), Georgia, serif !important;
-          font-size: 17px !important;
-          line-height: 1.5 !important;
+          font-size: 20px !important;
+          line-height: 1.48 !important;
           color: var(--ink) !important;
+          caret-color: var(--wine) !important;
           letter-spacing: 0 !important;
         }
 
-        .copilotKitPopup textarea::placeholder,
-        .copilotKitPopup input::placeholder,
-        [data-copilotkit-popup] textarea::placeholder,
-        [data-copilotkit-popup] input::placeholder,
+        [data-testid="copilot-chat-textarea"]::placeholder,
         [data-copilot-popup] textarea::placeholder,
         [data-copilot-popup] input::placeholder {
-          font-size: 15px !important;
-          color: #8a8175 !important;
+          font-family: var(--font-book), Georgia, serif !important;
+          font-size: 17px !important;
+          color: #857968 !important;
           opacity: 1 !important;
         }
 
-        .copilotKitPopup button,
-        [data-copilotkit-popup] button,
+        [data-testid="copilot-add-menu-button"] {
+          color: var(--brass) !important;
+          background: transparent !important;
+        }
+
+        [data-testid="copilot-send-button"] {
+          background: var(--wine-dark) !important;
+          color: #fff8e9 !important;
+          border: 1px solid rgba(126, 48, 40, 0.55) !important;
+          border-radius: 3px !important;
+          box-shadow: inset 0 1px rgba(255, 255, 255, 0.12) !important;
+        }
+
+        [data-testid="copilot-send-button"]:hover:not(:disabled) {
+          background: var(--wine) !important;
+          transform: translateY(-1px);
+        }
+
+        [data-testid="copilot-assistant-message"],
+        [data-testid="copilot-assistant-message"] [class*="prose"] {
+          font-family: var(--font-book), Georgia, serif !important;
+          font-size: 18px !important;
+          line-height: 1.62 !important;
+          color: var(--ink) !important;
+        }
+
+        [data-testid="copilot-user-message"] > [class*="prose"] {
+          font-family: var(--font-book), Georgia, serif !important;
+          font-size: 18px !important;
+          line-height: 1.5 !important;
+          color: #fff8e9 !important;
+          background: var(--wine-dark) !important;
+          border: 1px solid rgba(126, 48, 40, 0.45) !important;
+          border-radius: 4px !important;
+          padding: 10px 13px !important;
+        }
+
+        [data-testid="copilot-scroll-content"] {
+          padding-inline: 2px;
+        }
+
         [data-copilot-popup] button {
-          transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+          font-family: inherit;
+          transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease;
         }
       `}</style>
 
@@ -186,7 +290,7 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
         agentId="reader"
         open={open}
         onOpenChange={setOpen}
-        width="min(440px, calc(100vw - 28px))"
+        width="min(470px, calc(100vw - 28px))"
         height="min(680px, calc(100vh - 120px))"
         clickOutsideToClose
         toggleButton={ReaderBubble}
