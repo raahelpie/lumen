@@ -34,7 +34,11 @@ type EpubRendition = {
   display: (target?: string) => Promise<unknown>;
   next: () => Promise<unknown>;
   prev: () => Promise<unknown>;
-  on: (event: string, handler: (...values: never[]) => void) => void;
+  on: {
+    (event: "relocated", handler: (location: EpubLocation) => void): void;
+    (event: "selected", handler: (cfiRange: string, contents: { window: Window }) => void): void;
+    (event: "touchstart" | "touchend", handler: (event: TouchEvent) => void): void;
+  };
   getContents: () => Array<{ document: Document }>;
   themes: { default: (styles: Record<string, Record<string, string>>) => void };
   destroy: () => void;
@@ -49,6 +53,35 @@ type EpubLocation = {
   };
 };
 
+type SwipeOrigin = {
+  x: number;
+  y: number;
+  startedAt: number;
+  target: EventTarget | null;
+};
+
+type SwipeTouchEvent = {
+  touches: TouchList;
+  changedTouches: TouchList;
+  target: EventTarget | null;
+};
+
+const SWIPE_DISTANCE = 54;
+const SWIPE_MAX_DURATION = 800;
+
+function closestInteractiveElement(target: EventTarget | null) {
+  const node = target as (Node & { closest?: (selector: string) => Element | null }) | null;
+  const element = typeof node?.closest === "function" ? node : node?.parentElement;
+  return typeof element?.closest === "function"
+    ? element.closest("a, button, input, textarea, select, [role='button'], [contenteditable='true']")
+    : null;
+}
+
+function documentHasSelection(target: EventTarget | null) {
+  const document = (target as Node | null)?.ownerDocument;
+  return Boolean(document?.getSelection?.() && !document.getSelection()?.isCollapsed);
+}
+
 function cleanText(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -58,6 +91,7 @@ export function EpubReader() {
   const fileRef = useRef<HTMLInputElement>(null);
   const bookRef = useRef<EpubBook | null>(null);
   const renditionRef = useRef<EpubRendition | null>(null);
+  const swipeOriginRef = useRef<SwipeOrigin | null>(null);
   const [context, setContext] = useState<ReaderContext>(EMPTY_CONTEXT);
   const [hasBook, setHasBook] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -81,6 +115,40 @@ export function EpubReader() {
         surroundingText: text.slice(0, 11000),
         selectedText: selection,
       }));
+    }
+  }, []);
+
+  const beginSwipe = useCallback((event: SwipeTouchEvent) => {
+    if (event.touches.length !== 1 || closestInteractiveElement(event.target)) {
+      swipeOriginRef.current = null;
+      return;
+    }
+
+    const touch = event.touches[0];
+    swipeOriginRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      startedAt: performance.now(),
+      target: event.target,
+    };
+  }, []);
+
+  const finishSwipe = useCallback((event: SwipeTouchEvent) => {
+    const origin = swipeOriginRef.current;
+    swipeOriginRef.current = null;
+    const touch = event.changedTouches[0];
+    if (!origin || !touch || documentHasSelection(origin.target)) return;
+
+    const deltaX = touch.clientX - origin.x;
+    const deltaY = touch.clientY - origin.y;
+    const duration = performance.now() - origin.startedAt;
+    const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+    if (duration > SWIPE_MAX_DURATION || Math.abs(deltaX) < SWIPE_DISTANCE || !isHorizontal) return;
+
+    if (deltaX < 0) {
+      void renditionRef.current?.next();
+    } else {
+      void renditionRef.current?.prev();
     }
   }, []);
 
@@ -113,10 +181,11 @@ export function EpubReader() {
           color: "#2f2922 !important",
           background: "#f5eddd !important",
           "font-family": "Georgia, 'Times New Roman', serif !important",
-          "line-height": "1.72 !important",
-          padding: "28px 30px !important",
+          "line-height": "1.68 !important",
+          padding: "clamp(18px, 5vw, 30px) !important",
+          "touch-action": "pan-y pinch-zoom !important",
         },
-        p: { "font-size": "1.08rem !important" },
+        p: { "font-size": "clamp(1rem, 2.3vw, 1.08rem) !important" },
         a: { color: "#7c3228 !important" },
       });
 
@@ -142,6 +211,8 @@ export function EpubReader() {
         const selection = cleanText(contents.window.getSelection?.()?.toString() || "");
         setContext((current) => ({ ...current, selectedText: selection, location: cfiRange || current.location }));
       });
+      rendition.on("touchstart", beginSwipe);
+      rendition.on("touchend", finishSwipe);
 
       setContext({
         ...EMPTY_CONTEXT,
@@ -164,7 +235,7 @@ export function EpubReader() {
     } finally {
       setLoading(false);
     }
-  }, [captureVisibleText]);
+  }, [beginSwipe, captureVisibleText, finishSwipe]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -229,8 +300,12 @@ export function EpubReader() {
           <div className="rail-detail"><BookMarked size={15} /> {context.published}</div>
         </aside>
 
-        <article className={`book-page ${hasBook ? "book-page--epub" : ""}`}>
-          <div className="page-ornament" aria-hidden="true">✦</div>
+        <article
+          className={`book-page ${hasBook ? "book-page--epub" : ""}`}
+          onTouchStart={(event) => beginSwipe(event.nativeEvent)}
+          onTouchEnd={(event) => finishSwipe(event.nativeEvent)}
+        >
+          <div className="page-ornament" aria-hidden="true" />
           <div ref={mountRef} className="epub-mount" hidden={!hasBook} />
           {!hasBook && (
             <div className="sample-page">
@@ -260,13 +335,21 @@ export function EpubReader() {
         <button onClick={() => void renditionRef.current?.prev()} disabled={!hasBook} aria-label="Previous page">
           <ChevronLeft size={19} /> Previous
         </button>
-        <span>{hasBook ? context.chapter : "A sample passage · upload any EPUB to begin"}</span>
+        <div className="reader-controls__status" aria-live="polite">
+          <span className="reader-controls__desktop-status">
+            {hasBook ? context.chapter : "A sample passage · upload any EPUB to begin"}
+          </span>
+          <span className="reader-controls__mobile-status">
+            <span>{context.title}</span>
+            <strong>{context.progress}%</strong>
+          </span>
+          <ReaderCompanion context={context} />
+        </div>
         <button onClick={() => void renditionRef.current?.next()} disabled={!hasBook} aria-label="Next page">
           Next <ChevronRight size={19} />
         </button>
       </footer>
 
-      <ReaderCompanion context={context} />
     </main>
   );
 }

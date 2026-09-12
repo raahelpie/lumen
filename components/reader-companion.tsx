@@ -128,7 +128,7 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
   };
 
   return (
-    <>
+    <div className="companion-dock" aria-label="Reading companion controls">
       <button
         className={`voice-orb ${listening ? "voice-orb--listening" : ""}`}
         onClick={startListening}
@@ -160,6 +160,6 @@ export function ReaderCompanion({ context }: { context: ReaderContext }) {
         inputValue={draft}
         onInputChange={setDraft}
       />
-    </>
+    </div>
   );
 }
